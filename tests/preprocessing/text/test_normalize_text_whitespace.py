@@ -6,6 +6,7 @@ def test_normalize_text_whitespace():
     assert normalize_text_whitespace("  olá   mundo  ") == "olá mundo"
     assert normalize_text_whitespace("olá\tmundo") == "olá mundo"
     assert normalize_text_whitespace("olá\nmundo") == "olá mundo"
+    assert normalize_text_whitespace("MUCUS\n   FROM CF") == "MUCUS FROM CF"
     assert normalize_text_whitespace("olá mundo") == "olá mundo"
     assert normalize_text_whitespace("  ") == ""
     assert normalize_text_whitespace("") == ""
