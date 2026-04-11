@@ -24,6 +24,23 @@ def lowercase_text(text: str) -> str:
     return text.lower()
 
 
+def uppercase_text(text: str) -> str:
+    """
+    Convert a string to uppercase.
+
+    Parameters
+    ----------
+    text : str
+        Input text.
+
+    Returns
+    -------
+    str
+        Uppercased text.
+    """
+    return text.upper()
+
+
 def remove_text_accents(text: str) -> str:
     """
     Remove accent marks from a string.
@@ -57,6 +74,10 @@ def normalize_text_whitespace(text: str) -> str:
         Text with normalized whitespace.
     """
     return re.sub(r"\s+", " ", text).strip()
+
+
+def replace_text_substrings(text: str, old: str, new: str) -> str:
+    return text.replace(old, new)
 
 
 def replace_text_underscores_with_spaces(text: str) -> str:

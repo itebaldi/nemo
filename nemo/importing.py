@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import Literal
+from xml.etree import ElementTree as ET
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -72,6 +73,67 @@ def read_csv(
     )
 
 
+def write_csv(
+    df: pd.DataFrame,
+    file_path: str | Path,
+    separator: str = ",",
+    encoding: str = "utf-8",
+    include_header: bool = True,
+    include_index: bool = False,
+    mode: Literal["w", "a", "x"] = "w",
+) -> Path:
+    """
+    Write a pandas DataFrame to a CSV file.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame to be written.
+    file_path : str | Path
+        Path to the output file.
+    separator : str, default=","
+        Column separator used in the output file.
+    encoding : str, default="utf-8"
+        File encoding.
+    include_header : bool, default=True
+        Whether to write the header row.
+    include_index : bool, default=False
+        Whether to write the DataFrame index.
+    mode : {"w", "a", "x"}, default="w"
+        File writing mode:
+        - ``"w"`` overwrites the file
+        - ``"a"`` appends to the file
+        - ``"x"`` creates a new file and fails if it already exists
+
+    Returns
+    -------
+    Path
+        Path to the written file.
+
+    Raises
+    ------
+    ValueError
+        If ``separator`` is an empty string.
+    """
+    path = Path(file_path)
+
+    if separator == "":
+        raise ValueError("separator cannot be an empty string.")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    df.to_csv(
+        path,
+        sep=separator,
+        encoding=encoding,
+        header=include_header,
+        index=include_index,
+        mode=mode,
+    )
+
+    return path
+
+
 def read_html(path: str | Path) -> BeautifulSoup:
     """
     Read an HTML file and parse it into a BeautifulSoup object.
@@ -111,3 +173,33 @@ def write_html(html: BeautifulSoup, output_path: str | Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(str(html), encoding="utf-8")
     return path
+
+
+def read_xml(file_path: str | Path) -> ET.Element:
+    """
+    Read an XML file and return its root element.
+
+    Parameters
+    ----------
+    file_path : str | Path
+        Path to the input XML file.
+
+    Returns
+    -------
+    xml.etree.ElementTree.Element
+        Root element of the parsed XML tree.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the input file does not exist.
+    xml.etree.ElementTree.ParseError
+        If the XML content is malformed.
+    """
+    path = Path(file_path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"File not found: {path}")
+
+    tree = ET.parse(path)
+    return tree.getroot()
