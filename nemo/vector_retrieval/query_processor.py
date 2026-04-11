@@ -2,6 +2,7 @@
 
 
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 import pandas as pd
 from pydantic import BaseModel
@@ -102,7 +103,7 @@ class QueryProcessorConfig(BaseModel):
 
 
 def gen_processed_queries(
-    file_path: str | Path,
+    xml_root: ET.Element,
     output_path: str | Path | None = None,
 ) -> pd.DataFrame:
     """
@@ -125,12 +126,11 @@ def gen_processed_queries(
     The generated CSV uses ``;`` as separator and includes the columns
     ``QueryNumber`` and ``QueryText``.
     """
-    root = read_xml(file_path)
-    queries = find_xml_elements(root, "QUERY")
+    queries = find_xml_elements(xml_root, "QUERY")
 
     records: list[dict[str, str]] = []
 
-    for query in queries[:2]:
+    for query in queries:
         query_number = get_xml_element_text(find_xml_element(query, "QueryNumber"))
         query_text = get_xml_element_text(find_xml_element(query, "QueryText"))
 
@@ -166,4 +166,63 @@ def _normalize_text(text: str) -> str:
     )
 
 
-def gen_expected_docs(): ...
+def gen_expected_docs(
+    xml_root: ET.Element,
+    output_path: str | Path | None = None,
+) -> pd.DataFrame:
+    """
+    Generate an expected documents CSV from the input XML file.
+
+    Parameters
+    ----------
+    file_path : str | Path
+        Path to the input XML file containing the queries.
+    output_path : str | Path
+        Path to the output CSV file.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame containing the expected documents for each query.
+
+    Notes
+    -----
+    The generated CSV uses ``;`` as separator and includes the columns
+    ``QueryNumber``, ``DocNumber`` and ``DocVotes``.
+    """
+    queries = find_xml_elements(xml_root, "QUERY")
+
+    records: list[dict[str, str | int]] = []
+
+    for query in queries:
+        query_number = get_xml_element_text(find_xml_element(query, "QueryNumber"))
+        records_element = find_xml_element(query, "Records")
+
+        if records_element is None:
+            continue
+
+        items = find_xml_elements(records_element, "Item")
+
+        for item in items:
+            doc_number = get_xml_element_text(item)
+            score = item.attrib.get("score", "")
+            doc_votes = sum(character != "0" for character in score)
+
+            records.append(
+                {
+                    "QueryNumber": query_number,
+                    "DocNumber": doc_number,
+                    "DocVotes": doc_votes,
+                }
+            )
+
+    df = pd.DataFrame(records)
+
+    if output_path:
+        write_csv(
+            df=df,
+            file_path=output_path,
+            separator=";",
+        )
+
+    return df
