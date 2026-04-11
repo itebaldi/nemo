@@ -9,7 +9,6 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from toolz.functoolz import pipe
 
-from nemo.importing import read_xml
 from nemo.importing import write_csv
 from nemo.preprocessing.text import normalize_text_whitespace
 from nemo.preprocessing.text import remove_text_accents
