@@ -160,7 +160,12 @@ class InvertedIndex(RootModel[dict[str, list[int]]]):
         """
         df = read_csv(file_path=file_path, separator=separator)
         cls.validate_dataframe(df)
-        return InvertedIndexMatrix(root=df)
+        parsed_df = df.copy()
+        parsed_df[cls.word_column] = parsed_df[cls.word_column].map(str)
+        parsed_df[cls.documents_column] = parsed_df[cls.documents_column].map(
+            cls._parse_document_ids
+        )
+        return InvertedIndexMatrix(root=parsed_df)
 
 
 def gen_inverted_index(

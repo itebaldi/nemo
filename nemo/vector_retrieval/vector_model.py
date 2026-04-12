@@ -5,6 +5,11 @@ from pathlib import Path
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
+from nemo.importing import write_csv
+from nemo.preprocessing.indexing import InvertedIndex
+from nemo.preprocessing.tf_idf import VectorModel
+from nemo.preprocessing.tf_idf import gen_vector_space_model
+
 
 class VectorModelConfig(BaseModel):
     """
@@ -81,3 +86,27 @@ class VectorModelConfig(BaseModel):
             read_path=Path(config["LEIA"]),
             write_path=Path(config["ESCREVA"]),
         )
+
+
+def gen_vector_model(
+    read_path: Path,
+    output_path: str | Path | None = None,
+) -> VectorModel:
+
+    inverted_index = InvertedIndex.dataframe_from_csv(file_path=read_path)
+
+    vector_model = gen_vector_space_model(
+        inverted_index=inverted_index,
+        tf_method=VectorModel.normalized_tf_method,
+        idf_method=VectorModel.standard_idf_method,
+    )
+
+    if output_path:
+        write_csv(
+            df=vector_model.root,
+            file_path=output_path,
+            separator=";",
+            include_index=True,
+        )
+
+    return vector_model

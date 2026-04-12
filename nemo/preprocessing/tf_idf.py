@@ -171,12 +171,15 @@ def _gen_term_frequency_matrix(
         str(row["Word"]): dict(Counter(row["Documents"])) for _, row in df.iterrows()
     }
 
-    return (
+    term_frequency_matrix = (
         pd.DataFrame.from_dict(term_frequencies, orient="index")
         .sort_index()
         .fillna(0)
         .astype(int)
     )
+    term_frequency_matrix.index.name = "Word"
+
+    return term_frequency_matrix
 
 
 @curry
@@ -196,7 +199,7 @@ def _gen_tf_idf_matrix(
     tf_method : Callable[[pd.DataFrame], pd.DataFrame] | None, default=None
         Callable used to transform the term-frequency matrix before
         applying inverse document frequency weighting. If ``None``,
-        raw term frequency is used.
+        normalized term frequency is used.
     idf_method : Callable[[pd.Series, int], pd.Series] | None, default=None
         Callable used to generate inverse document frequency values.
         If ``None``, standard IDF is used.
