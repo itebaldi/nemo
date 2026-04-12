@@ -17,7 +17,7 @@ def test_gen_inverted_index_simple():
         "QUICK": [1],
     }
 
-    inverted_index = gen_inverted_index(documents)
+    inverted_index = gen_inverted_index(documents).root
     assert inverted_index == expected_index
 
 
@@ -33,7 +33,7 @@ def test_gen_inverted_index_with_repeated_words():
         "ORANGE": [2],
     }
 
-    inverted_index = gen_inverted_index(documents)
+    inverted_index = gen_inverted_index(documents).root
     assert inverted_index == expected_index
 
 
@@ -50,5 +50,5 @@ def test_gen_inverted_index_with_processing():
         "TESTE": [1, 1, 2],
     }
 
-    inverted_index = gen_inverted_index(documents)
+    inverted_index = gen_inverted_index(documents).root
     assert inverted_index == expected_index

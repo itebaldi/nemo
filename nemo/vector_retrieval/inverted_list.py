@@ -1,10 +1,8 @@
-# módulo 2 - Gerador Lista Invertida e 3 - Indexador
+# módulo 2 - Gerador Lista Invertida
 
 
-from collections import defaultdict
 from pathlib import Path
 
-import pandas as pd
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from toolz.functoolz import pipe
@@ -12,6 +10,8 @@ from toolz.functoolz import pipe
 from nemo.importing import read_xml
 from nemo.importing import write_csv
 from nemo.preprocessing.indexing import Document
+from nemo.preprocessing.indexing import InvertedIndex
+from nemo.preprocessing.indexing import InvertedIndexMatrix
 from nemo.preprocessing.indexing import gen_inverted_index
 from nemo.preprocessing.xml import find_xml_element
 from nemo.preprocessing.xml import find_xml_elements
@@ -112,7 +112,7 @@ class InvertedListGeneratorConfig(BaseModel):
 def gen_inverted_list(
     file_paths: list[Path],
     output_path: str | Path | None = None,
-) -> pd.DataFrame:
+) -> InvertedIndexMatrix:
     """
     Generate an inverted list from one or more XML files.
 
@@ -125,29 +125,20 @@ def gen_inverted_list(
 
     Returns
     -------
-    pd.DataFrame
+    InvertedIndexMatrix
         DataFrame containing the inverted list.
     """
-    inverted_index: dict[str, list[int]] = defaultdict(list)
 
-    inverted_index = pipe(
+    inverted_index: InvertedIndex = pipe(
         _gen_documents(file_paths),
         gen_inverted_index,
     )  # type: ignore
 
-    rows = [
-        {
-            "Word": term,
-            "Documents": document_ids,
-        }
-        for term, document_ids in inverted_index.items()
-    ]
-
-    df = pd.DataFrame(rows)
+    df = inverted_index.to_dataframe()
 
     if output_path:
         write_csv(
-            df=df,
+            df=df.root,
             file_path=output_path,
             separator=";",
         )

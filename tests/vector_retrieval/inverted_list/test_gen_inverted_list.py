@@ -1,5 +1,5 @@
-from nemo.vector_retrieval.index_builder import InvertedListGeneratorConfig
-from nemo.vector_retrieval.index_builder import gen_inverted_list
+from nemo.vector_retrieval.inverted_list import InvertedListGeneratorConfig
+from nemo.vector_retrieval.inverted_list import gen_inverted_list
 
 
 def test_gen_inverted_list():
