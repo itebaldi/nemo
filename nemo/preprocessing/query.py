@@ -2,6 +2,7 @@ import pandas as pd
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
+from nemo.preprocessing.indexing import tokenize_text
 from nemo.preprocessing.tf_idf import VectorModel
 
 
@@ -77,6 +78,8 @@ def _gen_query_vector(
     """
     Generate a query vector with unit term weights.
 
+    Uses the same term tokenization as document indexing.
+
     Parameters
     ----------
     query : Query
@@ -90,7 +93,7 @@ def _gen_query_vector(
         Query vector indexed by vocabulary terms.
     """
     query_vector = pd.Series(0.0, index=vocabulary)
-    query_terms = query.text.split()
+    query_terms = tokenize_text(query.text)
 
     for term in query_terms:
         if term in query_vector.index:

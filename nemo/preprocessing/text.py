@@ -250,3 +250,26 @@ def generate_ngrams(text: str, n: int) -> list[str]:
         return []
 
     return [" ".join(tokens[i : i + n]) for i in range(len(tokens) - n + 1)]
+
+
+@curry
+def filter_terms_by_min_length(
+    terms: list[str],
+    min_length: int = 2,
+) -> list[str]:
+    """
+    Keep tokens whose character length is at least ``min_length``.
+
+    This filters by **characters** per token, not by word count in a sentence.
+    """
+    return [token for token in terms if len(token) >= min_length]
+
+
+def filter_alphabetic_terms(terms: list[str]) -> list[str]:
+    """
+    Keep tokens that contain letters only (``str.isalpha()`` is true).
+
+    This drops numeric tokens, alphanumeric mixes, and stray punctuation
+    fragments, not only digits.
+    """
+    return [token for token in terms if token.isalpha()]

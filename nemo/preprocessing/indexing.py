@@ -11,6 +11,8 @@ from toolz.functoolz import pipe
 
 from inputs.stopwords import get_stop_words_for_text
 from nemo.importing import read_csv
+from nemo.preprocessing.text import filter_alphabetic_terms
+from nemo.preprocessing.text import filter_terms_by_min_length
 from nemo.preprocessing.text import generate_ngrams
 from nemo.preprocessing.text import normalize_text_whitespace
 from nemo.preprocessing.text import remove_text_accents
@@ -189,28 +191,25 @@ def gen_inverted_index(
     inverted_index: dict[str, list[int]] = defaultdict(list)
 
     for document in documents:
-        terms = _tokenize_text(document.text)
-
-        for term in terms:
-            if len(term) < 2:
-                continue
-
-            if not term.isalpha():
-                continue
-
+        for term in tokenize_text(document.text):
             inverted_index[term].append(document.document_id)
 
     return InvertedIndex(dict(sorted(inverted_index.items())))
 
 
-def _tokenize_text(text: str) -> list[str]:
+def tokenize_text(text: str) -> list[str]:
+    """Normalize text into index terms (stopwords removed; len >= 2; letters only)."""
     stop_words = get_stop_words_for_text(text)
 
-    return pipe(
+    terms: list[str] = pipe(
         remove_text_accents(text),
         remove_text_punctuation,
         uppercase_text,
         normalize_text_whitespace,
         remove_text_stopwords(stop_words=stop_words),
         generate_ngrams(n=1),
+        filter_alphabetic_terms,
+        filter_terms_by_min_length(min_length=2),
     )  # type: ignore
+
+    return terms
