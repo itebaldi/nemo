@@ -1,12 +1,15 @@
 import math
 from collections import Counter
+from pathlib import Path
 from typing import Callable
+from typing import ClassVar
 
 import pandas as pd
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from toolz.functoolz import pipe
 
+from nemo.importing import read_csv
 from nemo.preprocessing.indexing import InvertedIndex
 from nemo.preprocessing.indexing import InvertedIndexMatrix
 from nemo.tools import curry
@@ -23,6 +26,104 @@ class VectorModel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     root: pd.DataFrame
+
+    word_column: ClassVar[str] = InvertedIndex.word_column
+
+    @classmethod
+    def validate_dataframe(cls, df: pd.DataFrame) -> None:
+        """
+        Validate whether a DataFrame has the expected schema for a vector model.
+
+        Expected format
+        ---------------
+        - One column called "Word"
+        - At least one document column
+        - Document column names must be valid integers
+        - Document values must be numeric
+        """
+        if cls.word_column not in df.columns:
+            raise ValueError(
+                f"DataFrame must contain the '{cls.word_column}' column."
+            )
+
+        document_columns = [col for col in df.columns if col != cls.word_column]
+
+        if not document_columns:
+            raise ValueError(
+                "DataFrame must contain at least one document column besides 'Word'."
+            )
+
+        duplicated_columns = df.columns[df.columns.duplicated()].tolist()
+        if duplicated_columns:
+            raise ValueError(
+                f"DataFrame contains duplicated columns: {duplicated_columns}."
+            )
+
+        invalid_document_columns: list[object] = []
+        for column in document_columns:
+            try:
+                int(column)
+            except (TypeError, ValueError):
+                invalid_document_columns.append(column)
+
+        if invalid_document_columns:
+            raise ValueError(
+                "All document columns must be integer document ids. "
+                f"Invalid columns: {invalid_document_columns}."
+            )
+
+        numeric_values = df[document_columns].apply(pd.to_numeric, errors="coerce")
+        invalid_mask = numeric_values.isna() & df[document_columns].notna()
+
+        if invalid_mask.any().any():
+            invalid_positions = [
+                (row_index, column_name)
+                for row_index, row in invalid_mask.iterrows()
+                for column_name, is_invalid in row.items()
+                if is_invalid
+            ]
+            raise ValueError(
+                "All TF-IDF values must be numeric. "
+                f"Invalid cells found at: {invalid_positions[:10]}."
+            )
+
+    @classmethod
+    def from_dataframe(cls, df: pd.DataFrame) -> "VectorModel":
+        """
+        Create a validated VectorModel from a DataFrame.
+        """
+        cls.validate_dataframe(df)
+
+        parsed_df = df.copy()
+        parsed_df[cls.word_column] = parsed_df[cls.word_column].map(str)
+
+        document_columns = [
+            col for col in parsed_df.columns if col != cls.word_column
+        ]
+
+        renamed_columns = {column: int(column) for column in document_columns}
+        parsed_df = parsed_df.rename(columns=renamed_columns)
+
+        parsed_df[list(renamed_columns.values())] = parsed_df[
+            list(renamed_columns.values())
+        ].apply(pd.to_numeric, errors="raise")
+
+        parsed_df = parsed_df.set_index(cls.word_column)
+        parsed_df.index.name = cls.word_column
+
+        return cls(root=parsed_df)
+
+    @classmethod
+    def dataframe_from_csv(
+        cls,
+        file_path: str | Path,
+        separator: str = ";",
+    ) -> "VectorModel":
+        """
+        Read and validate a vector-model DataFrame from a CSV file.
+        """
+        df = read_csv(file_path, separator=separator)
+        return cls.from_dataframe(df)
 
     @staticmethod
     def normalized_tf_method(term_frequency_matrix: pd.DataFrame) -> pd.DataFrame:
@@ -168,7 +269,10 @@ def _gen_term_frequency_matrix(
     df = inverted_index.root
 
     term_frequencies = {
-        str(row["Word"]): dict(Counter(row["Documents"])) for _, row in df.iterrows()
+        str(row[InvertedIndex.word_column]): dict(
+            Counter(row[InvertedIndex.documents_column])
+        )
+        for _, row in df.iterrows()
     }
 
     term_frequency_matrix = (
@@ -177,7 +281,7 @@ def _gen_term_frequency_matrix(
         .fillna(0)
         .astype(int)
     )
-    term_frequency_matrix.index.name = "Word"
+    term_frequency_matrix.index.name = InvertedIndex.word_column
 
     return term_frequency_matrix
 
