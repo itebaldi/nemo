@@ -1,16 +1,17 @@
-# BulaCheck
+# Nemo
 
-BulaCheck é um projeto de verificação de alegações textuais sobre medicamentos com base em bulas oficiais e modelos de linguagem.
+Repositório organizado como **biblioteca Python** de ferramentas para **mineração e processamento de texto**: leitura de CSV/XML, pré-processamento, indexação, modelo vetorial (TF-IDF) e experimentos em torno de aplicações.
 
-A proposta é receber uma afirmação curta, como:
+Há **testes unitários** em `tests/` (pytest) para manter o comportamento dos módulos estável à medida que o código evolui.
 
-> "Tylenol faz mal para o coração"
+## Requisitos
 
-e produzir uma resposta fundamentada, indicando se a alegação é verdadeira, falsa ou parcialmente sustentada pelas evidências encontradas nas bulas.
+- Python **3.11** (intervalo definido em `pyproject.toml`)
+- Dependências gerenciadas com [Poetry](https://python-poetry.org/)
 
-## Ambiente (Conda + Poetry)
+## Configuração do ambiente
 
-Crie e ative um ambiente Conda na pasta do projeto e instale as dependências com o Poetry:
+Na raiz do repositório:
 
 ```sh
 conda create --prefix ./venv python=3.11 -y
@@ -19,63 +20,60 @@ poetry env use "$(which python)"
 poetry install
 ```
 
-O `poetry env use` associa o Poetry ao Python 3.11 do Conda (evita outro virtualenv separado).
-
-## Ollama (modelo local)
-
-Confira se o [Ollama](https://ollama.com/) está instalado. A documentação oficial está no [quickstart](https://docs.ollama.com/quickstart). Instalação rápida:
-
-- **Linux:**
-
-  ```sh
-  curl -fsSL https://ollama.com/install.sh | sh
-  ```
-
-- **Windows** (PowerShell):
-
-  ```powershell
-  irm https://ollama.com/install.ps1 | iex
-  ```
-
-Inicie o modelo (exemplo com Llama 3.1 8B):
+## Testes
 
 ```sh
-ollama run llama3.1:8b
+pytest
 ```
 
-Deixe o Ollama em execução enquanto usa o BulaCheck (a API local costuma ficar em `http://localhost:11434`).
+## Sistema de recuperação em memória (modelo vetorial)
 
-## Executar o BulaCheck
+Implementação em pipeline, em linha com trabalhos clássicos de RI: processamento de consultas a partir de XML, geração de lista invertida, construção do **modelo vetorial TF-IDF** e ranqueamento por similaridade de cosseno.
 
-Na raiz do repositório, com o ambiente ativado:
+### Como executar
+
+Na raiz do repositório (com o ambiente ativado e dependências instaladas):
 
 ```sh
-python -m nemo
+python -m nemo.retrieval_assignment.main
 ```
 
-O programa pede uma alegação e conversa com o modelo.
+Por padrão, o fluxo roda **em memória** (sem gravar CSVs intermediários). Os caminhos de leitura e escrita vêm dos arquivos `.CFG` em `inputs/vector_retrieval/`.
 
-**Estado atual:** o fluxo de busca automática nas bulas ainda não está concluído. Para depuração, quando a alegação menciona **paracetamol** e o pré-check pede evidências, o código usa **informações fixas** (bula lida de `inputs/bulas/json/paracetamol__prati_donaduzzi__cia_ltda.json`) em vez de buscar no site da Anvisa.
+### Arquivos de configuração
 
-## Objetivo
+| Arquivo | Chaves principais | Função |
+|---------|-------------------|--------|
+| `inputs/vector_retrieval/PC.CFG` | `LEIA`, `CONSULTAS`, `ESPERADOS` | Módulo 1 — processador de consultas (XML → CSV) |
+| `inputs/vector_retrieval/GLI.CFG` | `LEIA`, `ESCREVA` | Módulo 2 — gerador de lista invertida |
+| `inputs/vector_retrieval/INDEX.CFG` | `LEIA`, `ESCREVA` | Módulo 3 — indexador (lista invertida → modelo vetorial) |
+| `inputs/vector_retrieval/BUSCA.CFG` | `MODELO`, `CONSULTAS`, `RESULTADOS` | Módulo 4 — buscador |
 
-Desenvolver um sistema capaz de:
+Cada linha útil nos `.CFG` segue o formato `CHAVE=caminho`.
 
-- identificar o medicamento citado e a alegação principal
-- recuperar trechos relevantes em bulas oficiais
-- analisar evidências favoráveis, contrárias ou parciais
-- gerar uma resposta final clara e justificável
+### Pasta de resultados
 
-## Dados
+As saídas configuradas nos `.CFG` apontam, neste repositório, para **`outputs/vector_retrieval/RESULT/`** (a pasta é criada na gravação, se ainda não existir). Arquivos típicos:
 
-O projeto utiliza dois conjuntos principais de dados:
+| Arquivo | Origem (CFG / módulo) |
+|---------|------------------------|
+| `consultas.csv` | `PC.CFG` — consultas processadas |
+| `esperados.csv` | `PC.CFG` — documentos esperados por consulta |
+| `lista_invertida.csv` | `GLI.CFG` — lista invertida |
+| `modelo_vetorial.csv` | `INDEX.CFG` — modelo vetorial TF-IDF |
+| `resultados.csv` | `BUSCA.CFG` — ranqueamento das consultas |
 
-- **Bulas de medicamentos**
-  - coletadas de fontes públicas
-  - armazenadas inicialmente em PDF
-  - convertidas para texto processável
+Com **`WRITE_FILES = False`** em `nemo/retrieval_assignment/main.py`, o `main` só processa em memória e **não** grava esses CSVs. Defina `WRITE_FILES = True` para gerar os arquivos nessa pasta (e, no fluxo completo em disco, o buscador recarrega modelo e consultas a partir dos caminhos de `BUSCA.CFG`).
 
-- **Alegações textuais**
-  - construídas manualmente
-  - organizadas em formato estruturado
-  - associadas, quando possível, a rótulos de veracidade esperados
+### Código dos módulos
+
+- `nemo/retrieval_assignment/query_processor.py` — consultas e documentos esperados
+- `nemo/retrieval_assignment/inverted_list.py` — lista invertida
+- `nemo/retrieval_assignment/vector_model.py` — matriz TF-IDF
+- `nemo/retrieval_assignment/search_engine.py` — ranqueamento
+- `nemo/vector_retrieval/` — núcleo do modelo vetorial e do índice invertido
+
+### Formato do arquivo de modelo (MODELO)
+
+A descrição detalhada do CSV do modelo vetorial (colunas, separador, semântica dos pesos) está em **`MODELO.TXT`** na raiz do repositório.
+

@@ -1,0 +1,94 @@
+================================================================================
+  FORMATO DO ARQUIVO DO MODELO VETORIAL (TF-IDF)
+================================================================================
+
+Este documento descreve o arquivo CSV referenciado pela chave MODELO no
+arquivo BUSCA.CFG (por exemplo: outputs/vector_retrieval/RESULT/modelo_vetorial.csv),
+gerado pelo indexador (módulo 3) a partir da lista invertida.
+
+Pasta de resultados (saídas em disco)
+-------------------------------------
+  No projeto, as saídas do pipeline de recuperação ficam sob a pasta raiz
+  de resultados:
+
+    outputs/vector_retrieval/RESULT/
+
+  Além do modelo vetorial (MODELO / modelo_vetorial.csv), o mesmo diretório
+  concentra, conforme os .CFG, arquivos como consultas.csv, esperados.csv,
+  lista_invertida.csv e resultados.csv. O README na raiz do repositório
+  resume o papel de cada um.
+
+--------------------------------------------------------------------------------
+1. Codificação e delimitador
+--------------------------------------------------------------------------------
+
+  - Codificação: UTF-8
+  - Separador de campos: ponto e vírgula (;)
+  - Primeira linha: cabeçalho com os nomes das colunas
+
+--------------------------------------------------------------------------------
+2. Estrutura lógica da tabela
+--------------------------------------------------------------------------------
+
+  O arquivo representa uma MATRIZ termo-documento com pesos TF-IDF.
+
+  - Cada LINHA corresponde a um TERMO (vocabulário após o mesmo
+    pré-processamento usado na construção da lista invertida).
+
+  - Cada COLUNA (exceto a coluna de termos) corresponde a um DOCUMENTO,
+    identificado pelo número inteiro no cabeçalho da coluna.
+
+  - Cada CÉLULA (interseção termo × documento) contém o peso TF-IDF
+    (número real). Se o termo não ocorre no documento, o valor é zero.
+
+--------------------------------------------------------------------------------
+3. Colunas obrigatórias
+--------------------------------------------------------------------------------
+
+  Coluna "Word"
+  ------------
+  - Nome fixo: Word
+  - Conteúdo: string do termo (mesma convenção de caixa/normalização
+    do índice; na prática, termos em maiúsculas após o pipeline de indexação).
+
+  Colunas de documentos
+  ---------------------
+  - Nomes das colunas: identificadores numéricos dos documentos (inteiros),
+    por exemplo: 1, 2, 3, ...
+  - Não deve haver colunas duplicadas.
+  - Todos os valores sob essas colunas devem ser numéricos (pesos TF-IDF).
+
+--------------------------------------------------------------------------------
+4. Como o modelo é obtido (referência teórica)
+--------------------------------------------------------------------------------
+
+  Entrada do indexador: lista invertida em CSV com colunas:
+
+    Word        — termo
+    Documents   — lista de IDs de documento em que o termo aparece
+                  (repetindo o ID quando há múltiplas ocorrências no mesmo doc)
+
+  A partir disso o sistema:
+
+  1) Monta a matriz de frequência termo-documento.
+  2) Aplica TF normalizado por documento: cada frequência é dividida pela
+     maior frequência naquele documento (valores entre 0 e 1 por coluna).
+  3) Aplica IDF padrão: para cada termo, log(N / n), onde N é o número total
+     de documentos na coleção e n é o número de documentos que contêm o termo.
+  4) O peso final por célula é TF_normalizado × IDF do termo.
+
+  A busca (módulo 4) trata vetores de consulta e documento no mesmo espaço
+  e ranqueia documentos por similaridade de cosseno em relação à consulta.
+
+--------------------------------------------------------------------------------
+5. Leitura programática
+--------------------------------------------------------------------------------
+
+  No código do projeto, esse arquivo é carregado e validado pela classe
+  nemo.vector_retrieval.tf_idf.VectorModel (método dataframe_from_csv),
+  que espera exatamente a coluna "Word" e colunas de documentos com nomes
+  inteiros e valores numéricos.
+
+================================================================================
+  Fim da especificação
+================================================================================

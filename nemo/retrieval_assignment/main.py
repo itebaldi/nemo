@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 WRITE_FILES = False
 
 if __name__ == "__main__":
-    # python -m nemo.vector_retrieval.main
+    # python -m nemo.retrieval_assignment.main
     start = time.perf_counter()
     logging.basicConfig(
         level=logging.DEBUG,
