@@ -3,7 +3,7 @@ from pathlib import Path
 from toolz.functoolz import pipe
 
 from inputs.stopwords import get_english_stopwords
-from nemo.importing import read_csv
+from nemo.files.csv import read_csv
 from nemo.preprocessing.dataframe import apply_stemming
 from nemo.preprocessing.dataframe import create_bag_of_words_matrix
 from nemo.preprocessing.dataframe import map_column_values

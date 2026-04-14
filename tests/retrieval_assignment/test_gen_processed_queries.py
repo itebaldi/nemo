@@ -1,9 +1,12 @@
-from nemo.importing import read_xml
-from nemo.vector_retrieval.query_processor import QueryProcessorConfig
-from nemo.vector_retrieval.query_processor import gen_expected_docs
-from nemo.vector_retrieval.query_processor import gen_processed_queries
+import pytest
+
+from nemo.files.xml import read_xml
+from nemo.retrieval_assignment.query_processor import QueryProcessorConfig
+from nemo.retrieval_assignment.query_processor import gen_expected_docs
+from nemo.retrieval_assignment.query_processor import gen_processed_queries
 
 
+@pytest.mark.slow
 def test_gen_processed_queries():
     config = QueryProcessorConfig.create()
 

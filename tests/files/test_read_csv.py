@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from nemo.importing import read_csv
+from nemo.files.csv import read_csv
 
 
 def test_read_csv():

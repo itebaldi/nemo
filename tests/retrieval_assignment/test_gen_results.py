@@ -1,9 +1,12 @@
-from nemo.importing import read_csv
-from nemo.preprocessing.tf_idf import VectorModel
-from nemo.vector_retrieval.search_engine import SearcherConfig
-from nemo.vector_retrieval.search_engine import gen_results
+import pytest
+
+from nemo.files.csv import read_csv
+from nemo.retrieval_assignment.search_engine import SearcherConfig
+from nemo.retrieval_assignment.search_engine import gen_results
+from nemo.vector_retrieval.tf_idf import VectorModel
 
 
+@pytest.mark.slow
 def test_gen_results():
     config = SearcherConfig.create()
 

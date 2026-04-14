@@ -7,10 +7,10 @@ from pathlib import Path
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
-from nemo.importing import write_csv
-from nemo.preprocessing.indexing import InvertedIndex
-from nemo.preprocessing.tf_idf import VectorModel
-from nemo.preprocessing.tf_idf import gen_vector_space_model
+from nemo.files.csv import write_csv
+from nemo.vector_retrieval.indexing import InvertedIndex
+from nemo.vector_retrieval.tf_idf import VectorModel
+from nemo.vector_retrieval.tf_idf import gen_vector_space_model
 
 logger = logging.getLogger(__name__)
 

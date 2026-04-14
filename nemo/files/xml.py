@@ -1,4 +1,35 @@
+from pathlib import Path
 from xml.etree import ElementTree as ET
+
+
+def read_xml(file_path: str | Path) -> ET.Element:
+    """
+    Read an XML file and return its root element.
+
+    Parameters
+    ----------
+    file_path : str | Path
+        Path to the input XML file.
+
+    Returns
+    -------
+    xml.etree.ElementTree.Element
+        Root element of the parsed XML tree.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the input file does not exist.
+    xml.etree.ElementTree.ParseError
+        If the XML content is malformed.
+    """
+    path = Path(file_path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"File not found: {path}")
+
+    tree = ET.parse(path)
+    return tree.getroot()
 
 
 def find_xml_elements(

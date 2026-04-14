@@ -2,10 +2,8 @@ from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import Literal
-from xml.etree import ElementTree as ET
 
 import pandas as pd
-from bs4 import BeautifulSoup
 
 
 def read_csv(
@@ -132,74 +130,3 @@ def write_csv(
     )
 
     return path
-
-
-def read_html(path: str | Path) -> BeautifulSoup:
-    """
-    Read an HTML file and parse it into a BeautifulSoup object.
-
-    Parameters
-    ----------
-    path : str | Path
-        Path to the input HTML file.
-
-    Returns
-    -------
-    BeautifulSoup
-        Parsed HTML content as a BeautifulSoup object.
-    """
-    html_path = Path(path)
-    html = html_path.read_text(encoding="utf-8")
-    return BeautifulSoup(html, "html.parser")
-
-
-def write_html(html: BeautifulSoup, output_path: str | Path) -> Path:
-    """
-    Write a BeautifulSoup object to an HTML file.
-
-    Parameters
-    ----------
-    html : BeautifulSoup
-        The BeautifulSoup object to be written to a file.
-    output_path : str | Path
-        Path to the output HTML file.
-
-    Returns
-    -------
-    Path
-        The path where the file was saved.
-    """
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(str(html), encoding="utf-8")
-    return path
-
-
-def read_xml(file_path: str | Path) -> ET.Element:
-    """
-    Read an XML file and return its root element.
-
-    Parameters
-    ----------
-    file_path : str | Path
-        Path to the input XML file.
-
-    Returns
-    -------
-    xml.etree.ElementTree.Element
-        Root element of the parsed XML tree.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the input file does not exist.
-    xml.etree.ElementTree.ParseError
-        If the XML content is malformed.
-    """
-    path = Path(file_path)
-
-    if not path.exists():
-        raise FileNotFoundError(f"File not found: {path}")
-
-    tree = ET.parse(path)
-    return tree.getroot()

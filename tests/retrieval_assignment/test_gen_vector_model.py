@@ -1,7 +1,10 @@
-from nemo.vector_retrieval.vector_model import VectorModelConfig
-from nemo.vector_retrieval.vector_model import gen_vector_model
+import pytest
+
+from nemo.retrieval_assignment.vector_model import VectorModelConfig
+from nemo.retrieval_assignment.vector_model import gen_vector_model
 
 
+@pytest.mark.slow
 def test_gen_vector_model():
     config = VectorModelConfig.create()
 

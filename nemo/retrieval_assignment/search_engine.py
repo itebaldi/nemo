@@ -10,9 +10,9 @@ from pandas import DataFrame
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
-from nemo.importing import write_csv
-from nemo.preprocessing.query import Query
-from nemo.preprocessing.tf_idf import VectorModel
+from nemo.files.csv import write_csv
+from nemo.vector_retrieval.query import Query
+from nemo.vector_retrieval.tf_idf import VectorModel
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from nemo.importing import read_xml
+from nemo.files.xml import read_xml
 
 
 def test_read_xml():

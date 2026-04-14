@@ -2,8 +2,8 @@ import pandas as pd
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
-from nemo.preprocessing.indexing import tokenize_text
-from nemo.preprocessing.tf_idf import VectorModel
+from nemo.vector_retrieval.indexing import tokenize_text
+from nemo.vector_retrieval.tf_idf import VectorModel
 
 
 class RankedDocument(BaseModel):

@@ -1,7 +1,10 @@
-from nemo.vector_retrieval.inverted_list import InvertedListGeneratorConfig
-from nemo.vector_retrieval.inverted_list import gen_inverted_list
+import pytest
+
+from nemo.retrieval_assignment.inverted_list import InvertedListGeneratorConfig
+from nemo.retrieval_assignment.inverted_list import gen_inverted_list
 
 
+@pytest.mark.slow
 def test_gen_inverted_list():
     config = InvertedListGeneratorConfig.create()
 

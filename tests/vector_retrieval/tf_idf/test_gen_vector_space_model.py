@@ -2,9 +2,9 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from nemo.preprocessing.indexing import InvertedIndex
-from nemo.preprocessing.tf_idf import VectorModel
-from nemo.preprocessing.tf_idf import gen_vector_space_model
+from nemo.vector_retrieval.indexing import InvertedIndex
+from nemo.vector_retrieval.tf_idf import VectorModel
+from nemo.vector_retrieval.tf_idf import gen_vector_space_model
 
 
 @pytest.fixture

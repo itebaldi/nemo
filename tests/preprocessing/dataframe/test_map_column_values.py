@@ -2,7 +2,7 @@ from pathlib import Path
 
 from toolz.functoolz import pipe
 
-from nemo.importing import read_csv
+from nemo.files.csv import read_csv
 from nemo.preprocessing.dataframe import map_column_values
 
 

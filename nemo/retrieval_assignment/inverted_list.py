@@ -8,15 +8,15 @@ from pathlib import Path
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
-from nemo.importing import read_xml
-from nemo.importing import write_csv
-from nemo.preprocessing.indexing import Document
-from nemo.preprocessing.indexing import InvertedIndex
-from nemo.preprocessing.indexing import InvertedIndexMatrix
-from nemo.preprocessing.indexing import gen_inverted_index
-from nemo.preprocessing.xml import find_xml_element
-from nemo.preprocessing.xml import find_xml_elements
-from nemo.preprocessing.xml import get_xml_element_text
+from nemo.files.csv import write_csv
+from nemo.files.xml import find_xml_element
+from nemo.files.xml import find_xml_elements
+from nemo.files.xml import get_xml_element_text
+from nemo.files.xml import read_xml
+from nemo.vector_retrieval.indexing import Document
+from nemo.vector_retrieval.indexing import InvertedIndex
+from nemo.vector_retrieval.indexing import InvertedIndexMatrix
+from nemo.vector_retrieval.indexing import gen_inverted_index
 
 logger = logging.getLogger(__name__)
 

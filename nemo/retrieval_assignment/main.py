@@ -1,18 +1,18 @@
 import logging
 import time
 
-from nemo.importing import read_csv
-from nemo.importing import read_xml
-from nemo.preprocessing.tf_idf import VectorModel
-from nemo.vector_retrieval.inverted_list import InvertedListGeneratorConfig
-from nemo.vector_retrieval.inverted_list import gen_inverted_list
-from nemo.vector_retrieval.query_processor import QueryProcessorConfig
-from nemo.vector_retrieval.query_processor import gen_expected_docs
-from nemo.vector_retrieval.query_processor import gen_processed_queries
-from nemo.vector_retrieval.search_engine import SearcherConfig
-from nemo.vector_retrieval.search_engine import gen_results
-from nemo.vector_retrieval.vector_model import VectorModelConfig
-from nemo.vector_retrieval.vector_model import gen_vector_model
+from nemo.files.csv import read_csv
+from nemo.files.xml import read_xml
+from nemo.retrieval_assignment.inverted_list import InvertedListGeneratorConfig
+from nemo.retrieval_assignment.inverted_list import gen_inverted_list
+from nemo.retrieval_assignment.query_processor import QueryProcessorConfig
+from nemo.retrieval_assignment.query_processor import gen_expected_docs
+from nemo.retrieval_assignment.query_processor import gen_processed_queries
+from nemo.retrieval_assignment.search_engine import SearcherConfig
+from nemo.retrieval_assignment.search_engine import gen_results
+from nemo.retrieval_assignment.vector_model import VectorModelConfig
+from nemo.retrieval_assignment.vector_model import gen_vector_model
+from nemo.vector_retrieval.tf_idf import VectorModel
 
 logger = logging.getLogger(__name__)
 WRITE_FILES = False

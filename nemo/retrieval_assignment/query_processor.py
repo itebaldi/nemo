@@ -11,15 +11,15 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from toolz.functoolz import pipe
 
-from nemo.importing import write_csv
+from nemo.files.csv import write_csv
+from nemo.files.xml import find_xml_element
+from nemo.files.xml import find_xml_elements
+from nemo.files.xml import get_xml_element_text
 from nemo.preprocessing.text import normalize_text_whitespace
 from nemo.preprocessing.text import remove_text_accents
 from nemo.preprocessing.text import remove_text_punctuation
 from nemo.preprocessing.text import replace_text_substrings
 from nemo.preprocessing.text import uppercase_text
-from nemo.preprocessing.xml import find_xml_element
-from nemo.preprocessing.xml import find_xml_elements
-from nemo.preprocessing.xml import get_xml_element_text
 
 logger = logging.getLogger(__name__)
 

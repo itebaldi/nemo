@@ -1,5 +1,5 @@
-from nemo.preprocessing.indexing import Document
-from nemo.preprocessing.indexing import gen_inverted_index
+from nemo.vector_retrieval.indexing import Document
+from nemo.vector_retrieval.indexing import gen_inverted_index
 
 
 def test_gen_inverted_index_simple():

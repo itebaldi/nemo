@@ -10,7 +10,7 @@ from pydantic import RootModel
 from toolz.functoolz import pipe
 
 from inputs.stopwords import get_stop_words_for_text
-from nemo.importing import read_csv
+from nemo.files.csv import read_csv
 from nemo.preprocessing.text import filter_alphabetic_terms
 from nemo.preprocessing.text import filter_terms_by_min_length
 from nemo.preprocessing.text import generate_ngrams

@@ -9,10 +9,10 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from toolz.functoolz import pipe
 
-from nemo.importing import read_csv
-from nemo.preprocessing.indexing import InvertedIndex
-from nemo.preprocessing.indexing import InvertedIndexMatrix
+from nemo.files.csv import read_csv
 from nemo.tools import curry
+from nemo.vector_retrieval.indexing import InvertedIndex
+from nemo.vector_retrieval.indexing import InvertedIndexMatrix
 
 
 class VectorModel(BaseModel):
