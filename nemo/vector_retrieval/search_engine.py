@@ -1,16 +1,20 @@
 # módulo 4 - Buscador
 
 
+import logging
+import time
 from pathlib import Path
 
 import pandas as pd
+from pandas import DataFrame
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
-from nemo.importing import read_csv
 from nemo.importing import write_csv
 from nemo.preprocessing.query import Query
 from nemo.preprocessing.tf_idf import VectorModel
+
+logger = logging.getLogger(__name__)
 
 
 class SearcherConfig(BaseModel):
@@ -23,6 +27,8 @@ class SearcherConfig(BaseModel):
     @classmethod
     def create(cls, config_path: str | Path | None = None) -> "SearcherConfig":
 
+        logger.info("Reading search engine config...")
+
         path = (
             Path(config_path)
             if config_path is not None
@@ -30,6 +36,7 @@ class SearcherConfig(BaseModel):
         )
 
         if not path.exists():
+            # logger.error(f"Error opening CSV file: {e}")
             raise FileNotFoundError(f"File not found: {path}")
 
         config: dict[str, str] = {}
@@ -61,24 +68,31 @@ class SearcherConfig(BaseModel):
         if missing_keys:
             raise ValueError(f"Missing required config keys: {sorted(missing_keys)}")
 
-        return cls(
+        resolved = cls(
             model_path=Path(config["MODELO"]),
             queries_path=Path(config["CONSULTAS"]),
             results_path=Path(config["RESULTADOS"]),
         )
+        logger.info(
+            "Searcher config (%s): MODELO=%s CONSULTAS=%s RESULTADOS=%s",
+            path,
+            resolved.model_path,
+            resolved.queries_path,
+            resolved.results_path,
+        )
+        return resolved
 
 
-def gen_results(write_output: bool = False) -> pd.DataFrame:
+def gen_results(
+    vector_model: VectorModel,
+    queries: DataFrame,
+    output_path: str | Path | None = None,
+) -> pd.DataFrame:
 
-    config = SearcherConfig.create()
+    start = time.perf_counter()
 
-    vector_model = VectorModel.dataframe_from_csv(config.model_path)
-
-    queries = read_csv(
-        config.queries_path,
-        separator=";",
-        dtypes={"QueryNumber": str, "QueryText": str},
-    )
+    n_docs = len(vector_model.root.columns)
+    logger.info("Documents in model: %d", n_docs)
 
     rows: list[dict[str, object]] = []
 
@@ -101,14 +115,22 @@ def gen_results(write_output: bool = False) -> pd.DataFrame:
             }
         )
     df = pd.DataFrame(rows)
+    logger.info("Search finished: %d queries ranked", len(df))
 
-    if write_output:
+    if output_path:
         write_csv(
             df=df,
-            file_path=config.results_path,
+            file_path=output_path,
             separator=";",
         )
+        logger.info("Wrote search results to %s", output_path)
+    else:
+        logger.debug("Results kept in memory only (output_path=None)")
 
+    logger.info(
+        "Module 4 (search) finished in %.3fs",
+        time.perf_counter() - start,
+    )
     return df
 
 

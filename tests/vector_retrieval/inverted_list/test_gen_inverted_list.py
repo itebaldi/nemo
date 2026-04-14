@@ -11,3 +11,13 @@ def test_gen_inverted_list():
     )
 
     assert df is not None
+
+
+# pytest -k test_gen_inverted_list -s --log-cli-level=INFO
+# pytest -k test_gen_inverted_list -s --log-cli-level=DEBUG
+
+
+# pytest -k test_gen_inverted_list -s \
+#   --log-cli-level=INFO \
+#   --log-cli-format="%(asctime)s | %(levelname)s | %(filename)s:%(lineno)d | %(message)s" \
+#   --log-cli-date-format="%H:%M:%S"

@@ -1,5 +1,7 @@
 # módulo 3 - Indexador
 
+import logging
+import time
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -9,6 +11,8 @@ from nemo.importing import write_csv
 from nemo.preprocessing.indexing import InvertedIndex
 from nemo.preprocessing.tf_idf import VectorModel
 from nemo.preprocessing.tf_idf import gen_vector_space_model
+
+logger = logging.getLogger(__name__)
 
 
 class VectorModelConfig(BaseModel):
@@ -43,6 +47,8 @@ class VectorModelConfig(BaseModel):
         VectorModelConfig
             Vector model configuration.
         """
+
+        logger.info("Reading vector model config...")
 
         path = (
             Path(config_path)
@@ -82,10 +88,17 @@ class VectorModelConfig(BaseModel):
         if missing_keys:
             raise ValueError(f"Missing required config keys: {sorted(missing_keys)}")
 
-        return cls(
+        resolved = cls(
             read_path=Path(config["LEIA"]),
             write_path=Path(config["ESCREVA"]),
         )
+        logger.info(
+            "Indexer config (%s): LEIA=%s ESCREVA=%s",
+            path,
+            resolved.read_path,
+            resolved.write_path,
+        )
+        return resolved
 
 
 def gen_vector_model(
@@ -93,12 +106,24 @@ def gen_vector_model(
     output_path: str | Path | None = None,
 ) -> VectorModel:
 
+    start = time.perf_counter()
+    logger.info("Module 3 — load inverted list from %s", read_path)
     inverted_index = InvertedIndex.dataframe_from_csv(file_path=read_path)
+    logger.info("Terms in inverted list: %d", len(inverted_index.root))
 
+    logger.info(
+        "Building vector model (per-document normalized TF + standard IDF)",
+    )
     vector_model = gen_vector_space_model(
         inverted_index=inverted_index,
         tf_method=VectorModel.normalized_tf_method,
         idf_method=VectorModel.standard_idf_method,
+    )
+    n_docs = len(vector_model.root.columns)
+    logger.info(
+        "Vector model matrix: %d terms × %d documents",
+        len(vector_model.root),
+        n_docs,
     )
 
     if output_path:
@@ -108,5 +133,10 @@ def gen_vector_model(
             separator=";",
             include_index=True,
         )
+        logger.info("Wrote vector model to %s", output_path)
 
+    logger.info(
+        "Module 3 (vector model) finished in %.3fs",
+        time.perf_counter() - start,
+    )
     return vector_model

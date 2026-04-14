@@ -1,11 +1,12 @@
 # módulo 2 - Gerador Lista Invertida
 
 
+import logging
+import time
 from pathlib import Path
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
-from toolz.functoolz import pipe
 
 from nemo.importing import read_xml
 from nemo.importing import write_csv
@@ -16,6 +17,8 @@ from nemo.preprocessing.indexing import gen_inverted_index
 from nemo.preprocessing.xml import find_xml_element
 from nemo.preprocessing.xml import find_xml_elements
 from nemo.preprocessing.xml import get_xml_element_text
+
+logger = logging.getLogger(__name__)
 
 
 class InvertedListGeneratorConfig(BaseModel):
@@ -54,6 +57,8 @@ class InvertedListGeneratorConfig(BaseModel):
         InvertedListGeneratorConfig
             Parsed inverted list generator configuration.
         """
+        logger.info("Reading inverted list config...")
+
         path = (
             Path(config_path)
             if config_path is not None
@@ -103,10 +108,19 @@ class InvertedListGeneratorConfig(BaseModel):
         if write_path is None:
             raise ValueError("Missing required ESCREVA instruction.")
 
-        return cls(
+        resolved = cls(
             read_paths=read_paths,
             write_path=write_path,
         )
+        logger.info(
+            "Inverted list config (%s): %d LEIA file(s) → %s",
+            path,
+            len(resolved.read_paths),
+            resolved.write_path,
+        )
+        for rp in resolved.read_paths:
+            logger.debug("  LEIA %s", rp)
+        return resolved
 
 
 def gen_inverted_list(
@@ -128,13 +142,21 @@ def gen_inverted_list(
     InvertedIndexMatrix
         DataFrame containing the inverted list.
     """
+    start = time.perf_counter()
+    logger.info(
+        "Module 2 — build inverted list from %d XML file(s)",
+        len(file_paths),
+    )
 
-    inverted_index: InvertedIndex = pipe(
-        _gen_documents(file_paths),
-        gen_inverted_index,
-    )  # type: ignore
+    documents = _gen_documents(file_paths)
+    inverted_index: InvertedIndex = gen_inverted_index(documents)
 
     df = inverted_index.to_dataframe()
+    logger.info(
+        "Inverted index: %d distinct terms, %d DataFrame rows",
+        len(inverted_index.root),
+        len(df.root),
+    )
 
     if output_path:
         write_csv(
@@ -142,7 +164,12 @@ def gen_inverted_list(
             file_path=output_path,
             separator=";",
         )
+        logger.info("Wrote inverted list to %s", output_path)
 
+    logger.info(
+        "Module 2 (inverted list) finished in %.3fs",
+        time.perf_counter() - start,
+    )
     return df
 
 
@@ -165,6 +192,7 @@ def _gen_documents(file_paths: list[Path]) -> list[Document]:
     for file_path in file_paths:
         root = read_xml(file_path)
         records = find_xml_elements(root, "RECORD")
+        n_before = len(documents)
 
         for record in records:
             record_number = get_xml_element_text(
@@ -190,5 +218,13 @@ def _gen_documents(file_paths: list[Path]) -> list[Document]:
                     text=record_text,
                 )
             )
+
+        added = len(documents) - n_before
+        logger.debug("Extracted %d documents with text from %s", added, file_path)
+
+    logger.info(
+        "Documents with ABSTRACT or EXTRACT text: %d",
+        len(documents),
+    )
 
     return documents

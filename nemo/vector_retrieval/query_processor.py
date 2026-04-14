@@ -1,6 +1,8 @@
 # módulo 1 - Processador de Consultas
 
 
+import logging
+import time
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -18,6 +20,8 @@ from nemo.preprocessing.text import uppercase_text
 from nemo.preprocessing.xml import find_xml_element
 from nemo.preprocessing.xml import find_xml_elements
 from nemo.preprocessing.xml import get_xml_element_text
+
+logger = logging.getLogger(__name__)
 
 
 class QueryProcessorConfig(BaseModel):
@@ -55,6 +59,8 @@ class QueryProcessorConfig(BaseModel):
         QueryProcessorConfig
             Parsed query processor configuration.
         """
+
+        logger.info("Reading query processor config...")
 
         path = (
             Path(config_path)
@@ -94,11 +100,19 @@ class QueryProcessorConfig(BaseModel):
         if missing_keys:
             raise ValueError(f"Missing required config keys: {sorted(missing_keys)}")
 
-        return cls(
+        resolved = cls(
             read_path=Path(config["LEIA"]),
             queries_output_path=Path(config["CONSULTAS"]),
             expected_output_path=Path(config["ESPERADOS"]),
         )
+        logger.info(
+            "Query processor config from %s: LEIA=%s CONSULTAS=%s ESPERADOS=%s",
+            path,
+            resolved.read_path,
+            resolved.queries_output_path,
+            resolved.expected_output_path,
+        )
+        return resolved
 
 
 def gen_processed_queries(
@@ -125,7 +139,13 @@ def gen_processed_queries(
     The generated CSV uses ``;`` as separator and includes the columns
     ``QueryNumber`` and ``QueryText``.
     """
+
+    start = time.perf_counter()
     queries = find_xml_elements(xml_root, "QUERY")
+    logger.info(
+        "Module 1 — normalize and export %d queries",
+        len(queries),
+    )
 
     records: list[dict[str, str]] = []
 
@@ -143,6 +163,7 @@ def gen_processed_queries(
         )
 
     df = pd.DataFrame(records)
+    logger.info("Processed queries DataFrame: %d rows", len(df))
 
     if output_path:
         write_csv(
@@ -150,7 +171,12 @@ def gen_processed_queries(
             file_path=output_path,
             separator=";",
         )
+        logger.info("Wrote processed queries to %s", output_path)
 
+    logger.info(
+        "Module 1 (processed queries) finished in %.3fs",
+        time.perf_counter() - start,
+    )
     return df
 
 
@@ -189,7 +215,12 @@ def gen_expected_docs(
     The generated CSV uses ``;`` as separator and includes the columns
     ``QueryNumber``, ``DocNumber`` and ``DocVotes``.
     """
+    start = time.perf_counter()
     queries = find_xml_elements(xml_root, "QUERY")
+    logger.info(
+        "Module 1 — extract expected relevance for %d queries",
+        len(queries),
+    )
 
     records: list[dict[str, str | int]] = []
 
@@ -198,6 +229,7 @@ def gen_expected_docs(
         records_element = find_xml_element(query, "Records")
 
         if records_element is None:
+            logger.debug("Query %s has no Records element", query_number)
             continue
 
         items = find_xml_elements(records_element, "Item")
@@ -216,6 +248,7 @@ def gen_expected_docs(
             )
 
     df = pd.DataFrame(records)
+    logger.info("Expected judgments: %d (query, document) rows", len(df))
 
     if output_path:
         write_csv(
@@ -223,5 +256,10 @@ def gen_expected_docs(
             file_path=output_path,
             separator=";",
         )
+        logger.info("Wrote expected judgments to %s", output_path)
 
+    logger.info(
+        "Module 1 (expected judgments) finished in %.3fs",
+        time.perf_counter() - start,
+    )
     return df
