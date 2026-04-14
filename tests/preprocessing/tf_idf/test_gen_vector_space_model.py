@@ -49,6 +49,7 @@ def test_gen_vector_space_model__default_methods(
         2: {"APPLE": 0.0, "BANANA": 0.0, "ORANGE": idf_orange},
     }
     expected_df = pd.DataFrame(expected_data)
+    expected_df.index.name = "Word"
 
     assert isinstance(vector_model, VectorModel)
     assert_frame_equal(vector_model.root, expected_df, check_dtype=False)
@@ -80,6 +81,7 @@ def test_gen_vector_space_model__with_log_tf(sample_inverted_index: InvertedInde
         2: {"APPLE": 0.0, "BANANA": 0.0, "ORANGE": 1 * idf_orange},
     }
     expected_df = pd.DataFrame(expected_data)
+    expected_df.index.name = "Word"
 
     assert_frame_equal(vector_model.root, expected_df, check_dtype=False)
 
