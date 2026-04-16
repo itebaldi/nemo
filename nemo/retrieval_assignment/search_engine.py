@@ -12,6 +12,7 @@ from pydantic import ConfigDict
 
 from nemo.files.csv import write_csv
 from nemo.vector_retrieval.query import Query
+from nemo.vector_retrieval.search import search
 from nemo.vector_retrieval.tf_idf import VectorModel
 
 logger = logging.getLogger(__name__)
@@ -94,27 +95,10 @@ def gen_results(
     n_docs = len(vector_model.root.columns)
     logger.info("Documents in model: %d", n_docs)
 
-    rows: list[dict[str, object]] = []
+    queries_df = _queries_from_dataframe(queries)
+    search_results = search(queries_df, vector_model)
 
-    for query in _queries_from_dataframe(queries):
-        ranked_documents = query.search(vector_model)
-
-        results = [
-            (
-                ranked_document.rank,
-                ranked_document.document_id,
-                ranked_document.score,
-            )
-            for ranked_document in ranked_documents
-        ]
-
-        rows.append(
-            {
-                "QueryNumber": query.query_id,
-                "Results": results,
-            }
-        )
-    df = pd.DataFrame(rows)
+    df = search_results.to_dataframe()
     logger.info("Search finished: %d queries ranked", len(df))
 
     if output_path:

@@ -1,0 +1,17 @@
+=== Resultado da análise ===
+queries_evaluated: 99
+mean_p10: 0.39090909090909065
+mean_p20: 0.2909090909090908
+mean_recall20: 0.18617231463818285
+mean_avg_precision: 0.2099781981708207
+mean_coverage: 0.9824546873235331
+min_coverage: 0.8363636363636363
+max_coverage: 1.0
+full_coverage_count: 62
+
+Exemplo de métricas por query:
+{'qid': '00001', 'relevant_docs': 34, 'p10': 0.2, 'p20': 0.25, 'recall20': 0.14705882352941177, 'avg_precision': 0.12773028052153249, 'coverage': 1.0}
+{'qid': '00002', 'relevant_docs': 7, 'p10': 0.2, 'p20': 0.1, 'recall20': 0.2857142857142857, 'avg_precision': 0.15344874186377735, 'coverage': 1.0}
+{'qid': '00003', 'relevant_docs': 43, 'p10': 0.3, 'p20': 0.15, 'recall20': 0.06976744186046512, 'avg_precision': 0.11192296974538239, 'coverage': 1.0}
+{'qid': '00004', 'relevant_docs': 9, 'p10': 0.1, 'p20': 0.05, 'recall20': 0.1111111111111111, 'avg_precision': 0.07425212268298748, 'coverage': 1.0}
+{'qid': '00005', 'relevant_docs': 131, 'p10': 0.8, 'p20': 0.55, 'recall20': 0.08396946564885496, 'avg_precision': 0.21465904415366102, 'coverage': 0.9770992366412213}
