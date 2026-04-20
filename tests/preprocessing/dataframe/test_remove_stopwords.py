@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from inputs.stopwords import get_portuguese_stopwords
 from nemo.preprocessing.dataframe import remove_stopwords
+from nemo.stopwords import get_portuguese_stopwords
 
 STOP_WORDS = get_portuguese_stopwords()
 

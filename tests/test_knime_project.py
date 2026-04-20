@@ -2,7 +2,6 @@ from pathlib import Path
 
 from toolz.functoolz import pipe
 
-from inputs.stopwords import get_english_stopwords
 from nemo.files.csv import read_csv
 from nemo.preprocessing.dataframe import apply_stemming
 from nemo.preprocessing.dataframe import create_bag_of_words_matrix
@@ -15,6 +14,7 @@ from nemo.preprocessing.text import remove_text_punctuation
 from nemo.preprocessing.text import remove_text_stopwords
 from nemo.preprocessing.text import stem_text
 from nemo.preprocessing.utils import transform_text_column
+from nemo.stopwords import get_english_stopwords
 
 
 def test_knime_project():

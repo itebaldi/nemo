@@ -9,7 +9,6 @@ from pydantic import ConfigDict
 from pydantic import RootModel
 from toolz.functoolz import pipe
 
-from inputs.stopwords import get_stop_words_for_text
 from nemo.files.csv import read_csv
 from nemo.preprocessing.text import filter_alphabetic_terms
 from nemo.preprocessing.text import filter_terms_by_min_length
@@ -19,6 +18,7 @@ from nemo.preprocessing.text import remove_text_accents
 from nemo.preprocessing.text import remove_text_punctuation
 from nemo.preprocessing.text import remove_text_stopwords
 from nemo.preprocessing.text import uppercase_text
+from nemo.stopwords import get_stop_words_for_text
 
 
 class Document(BaseModel):

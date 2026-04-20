@@ -1,5 +1,5 @@
-from inputs.stopwords import get_portuguese_stopwords
 from nemo.preprocessing.text import remove_text_stopwords
+from nemo.stopwords import get_portuguese_stopwords
 
 STOP_WORDS = get_portuguese_stopwords()
 

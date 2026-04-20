@@ -124,5 +124,5 @@ def get_stop_words_for_text(text: str) -> set[str]:
 
 
 if __name__ == "__main__":
-    # python -m inputs.stopwords
+    # python -m nemo.stopwords.__init__
     initialize_nltk()

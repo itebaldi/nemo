@@ -1,12 +1,12 @@
 import pandas as pd
 from toolz.functoolz import pipe
 
-from inputs.stopwords import get_english_stopwords
 from nemo.preprocessing.text import lowercase_text
 from nemo.preprocessing.text import remove_text_punctuation
 from nemo.preprocessing.text import remove_text_stopwords
 from nemo.preprocessing.text import stem_text
 from nemo.preprocessing.utils import transform_text_column
+from nemo.stopwords import get_english_stopwords
 
 
 def test_transform_text_column():
