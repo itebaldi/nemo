@@ -1,0 +1,15 @@
+{
+  "queries_evaluated": 99,
+  "mean_precision": {
+    "10": 0.39090909090909065,
+    "20": 0.2909090909090908
+  },
+  "mean_recall": {
+    "10": 0.1392570368887903
+  },
+  "mean_avg_precision": 0.2099781981708207,
+  "mean_coverage": 0.9824546873235331,
+  "min_coverage": 0.8363636363636363,
+  "max_coverage": 1.0,
+  "full_coverage_count": 62
+}

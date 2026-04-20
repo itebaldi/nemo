@@ -3,6 +3,7 @@
 
 import logging
 import time
+from collections import defaultdict
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -20,6 +21,7 @@ from nemo.preprocessing.text import remove_text_accents
 from nemo.preprocessing.text import remove_text_punctuation
 from nemo.preprocessing.text import replace_text_substrings
 from nemo.preprocessing.text import uppercase_text
+from nemo.vector_retrieval.metrics import Relevance
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +196,7 @@ def _normalize_text(text: str) -> str:
 def gen_expected_docs(
     xml_root: ET.Element,
     output_path: str | Path | None = None,
-) -> pd.DataFrame:
+) -> Relevance:
     """
     Generate an expected documents CSV from the input XML file.
 
@@ -223,6 +225,7 @@ def gen_expected_docs(
     )
 
     records: list[dict[str, str | int]] = []
+    relevance = defaultdict(set)
 
     for query in queries:
         query_number = get_xml_element_text(find_xml_element(query, "QueryNumber"))
@@ -246,6 +249,7 @@ def gen_expected_docs(
                     "DocVotes": doc_votes,
                 }
             )
+            relevance[query_number].add(int(doc_number))
 
     df = pd.DataFrame(records)
     logger.info("Expected judgments: %d (query, document) rows", len(df))
@@ -262,4 +266,5 @@ def gen_expected_docs(
         "Module 1 (expected judgments) finished in %.3fs",
         time.perf_counter() - start,
     )
-    return df
+
+    return Relevance(query_per_documents=relevance)

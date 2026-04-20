@@ -12,6 +12,7 @@ from pydantic import ConfigDict
 
 from nemo.files.csv import write_csv
 from nemo.vector_retrieval.query import Query
+from nemo.vector_retrieval.search import SearchResults
 from nemo.vector_retrieval.search import search
 from nemo.vector_retrieval.tf_idf import VectorModel
 
@@ -88,7 +89,7 @@ def gen_results(
     vector_model: VectorModel,
     queries: DataFrame,
     output_path: str | Path | None = None,
-) -> pd.DataFrame:
+) -> SearchResults:
 
     start = time.perf_counter()
 
@@ -115,7 +116,7 @@ def gen_results(
         "Module 4 (search) finished in %.3fs",
         time.perf_counter() - start,
     )
-    return df
+    return search_results
 
 
 def _queries_from_dataframe(df: pd.DataFrame) -> list[Query]:

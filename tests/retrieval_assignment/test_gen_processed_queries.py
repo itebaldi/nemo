@@ -24,9 +24,9 @@ def test_gen_expected_docs():
     config = QueryProcessorConfig.create()
     root = read_xml(config.read_path)
 
-    df = gen_expected_docs(
+    relevance = gen_expected_docs(
         xml_root=root,
         # output_path=config.expected_output_path,
     )
 
-    assert all(df.columns == ["QueryNumber", "DocNumber", "DocVotes"])
+    assert relevance

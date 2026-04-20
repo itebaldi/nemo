@@ -12,6 +12,7 @@ from nemo.retrieval_assignment.search_engine import SearcherConfig
 from nemo.retrieval_assignment.search_engine import gen_results
 from nemo.retrieval_assignment.vector_model import VectorModelConfig
 from nemo.retrieval_assignment.vector_model import gen_vector_model
+from nemo.vector_retrieval.metrics import compute_metrics
 from nemo.vector_retrieval.tf_idf import VectorModel
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ if __name__ == "__main__":
         output_path=query_config.queries_output_path if WRITE_FILES else None,
     )
 
-    esperados_df = gen_expected_docs(
+    esperados = gen_expected_docs(
         xml_root=root,
         output_path=query_config.expected_output_path if WRITE_FILES else None,
     )
@@ -75,10 +76,32 @@ if __name__ == "__main__":
             search_config.queries_path,
         )
 
-    results_df = gen_results(
+    results = gen_results(
         vector_model=vector_model_df,
         queries=consultas_df,
         output_path=search_config.results_path if WRITE_FILES else None,
+    )
+
+    metrics = compute_metrics(relevance=esperados, search_results=results)
+    logger.info("Computed %d metrics", len(metrics.queries_metrics))
+
+    summary = metrics.summary()
+    if WRITE_FILES:
+        summary.to_json("outputs/vector_retrieval/RESULT/analysis_results.json")
+
+    summary_text = f"""
+    SUMMARY OF METRICS
+    - queries_evaluated: {summary.queries_evaluated}
+    - mean_avg_precision: {summary.mean_avg_precision:.4f}
+    - mean_coverage: {summary.mean_coverage:.4f}
+    - min_coverage: {summary.min_coverage:.4f}
+    - max_coverage: {summary.max_coverage:.4f}
+    - full_coverage_count: {summary.full_coverage_count}
+    - mean_precision: {summary.mean_precision}
+    - mean_recall: {summary.mean_recall}
+    """
+    logger.info(
+        summary_text.replace("\n    ", "\n"),
     )
 
     logger.info(
